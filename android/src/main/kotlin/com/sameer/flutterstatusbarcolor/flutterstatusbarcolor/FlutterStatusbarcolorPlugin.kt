@@ -42,23 +42,19 @@ class FlutterStatusbarcolorPlugin : FlutterPlugin, MethodCallHandler, ActivityAw
         when (call.method) {
             "getstatusbarcolor" -> {
                 var statusBarColor: Int = 0
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    statusBarColor = activity!!.window.statusBarColor
-                }
+                statusBarColor = activity!!.window.statusBarColor
                 result.success(statusBarColor)
             }
             "setstatusbarcolor" -> {
                 val statusBarColor: Int = call.argument("color")!!
                 val animate: Boolean = call.argument("animate")!!
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    if (animate) {
-                        val colorAnim = ValueAnimator.ofArgb(activity!!.window.statusBarColor, statusBarColor)
-                        colorAnim.addUpdateListener { anim -> activity!!.window.statusBarColor = anim.animatedValue as Int }
-                        colorAnim.duration = 300
-                        colorAnim.start()
-                    } else {
-                        activity!!.window.statusBarColor = statusBarColor
-                    }
+                if (animate) {
+                    val colorAnim = ValueAnimator.ofArgb(activity!!.window.statusBarColor, statusBarColor)
+                    colorAnim.addUpdateListener { anim -> activity!!.window.statusBarColor = anim.animatedValue as Int }
+                    colorAnim.duration = 300
+                    colorAnim.start()
+                } else {
+                    activity!!.window.statusBarColor = statusBarColor
                 }
                 result.success(null)
             }
@@ -78,9 +74,7 @@ class FlutterStatusbarcolorPlugin : FlutterPlugin, MethodCallHandler, ActivityAw
             }
             "getnavigationbarcolor" -> {
                 var navigationBarColor: Int = 0
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    navigationBarColor = activity!!.window.navigationBarColor
-                }
+                navigationBarColor = activity!!.window.navigationBarColor
                 result.success(navigationBarColor)
             }
             "setnavigationbarcolor" -> {
@@ -104,12 +98,12 @@ class FlutterStatusbarcolorPlugin : FlutterPlugin, MethodCallHandler, ActivityAw
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightNavigationBars = !usewhiteforeground
                     window.isNavigationBarContrastEnforced = true
-                } else {
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     @Suppress("DEPRECATION")
                     if (usewhiteforeground) {
-                        window.decorView.systemUiVisibility = window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+                        window.decorView.systemUiVisibility = window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
                     } else {
-                        window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                        window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
                     }
                 }
                 result.success(null)
