@@ -4,7 +4,9 @@ import android.animation.ValueAnimator
 import android.app.Activity
 import android.os.Build
 import android.view.View
+import android.view.WindowInsetsController
 import androidx.annotation.NonNull
+import androidx.core.view.WindowCompat
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -62,11 +64,14 @@ class FlutterStatusbarcolorPlugin : FlutterPlugin, MethodCallHandler, ActivityAw
             }
             "setstatusbarwhiteforeground" -> {
                 val usewhiteforeground: Boolean = call.argument("whiteForeground")!!
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val window = activity!!.window
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = !usewhiteforeground
+                } else {
                     if (usewhiteforeground) {
-                        activity!!.window.decorView.systemUiVisibility = activity!!.window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+                        window.decorView.systemUiVisibility = window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
                     } else {
-                        activity!!.window.decorView.systemUiVisibility = activity!!.window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                        window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                     }
                 }
                 result.success(null)
@@ -81,25 +86,30 @@ class FlutterStatusbarcolorPlugin : FlutterPlugin, MethodCallHandler, ActivityAw
             "setnavigationbarcolor" -> {
                 val navigationBarColor: Int = call.argument("color")!!
                 val animate: Boolean = call.argument("animate")!!
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    if (animate) {
-                        val colorAnim = ValueAnimator.ofArgb(activity!!.window.navigationBarColor, navigationBarColor)
-                        colorAnim.addUpdateListener { anim -> activity!!.window.navigationBarColor = anim.animatedValue as Int }
-                        colorAnim.setDuration(300)
-                        colorAnim.start()
-                    } else {
-                        activity!!.window.navigationBarColor = navigationBarColor
-                    }
+                @Suppress("DEPRECATION")
+                if (animate) {
+                    val colorAnim = ValueAnimator.ofArgb(activity!!.window.navigationBarColor, navigationBarColor)
+                    colorAnim.addUpdateListener { anim -> activity!!.window.navigationBarColor = anim.animatedValue as Int }
+                    colorAnim.duration = 300
+                    colorAnim.start()
+                } else {
+                    @Suppress("DEPRECATION")
+                    activity!!.window.navigationBarColor = navigationBarColor
                 }
                 result.success(null)
             }
             "setnavigationbarwhiteforeground" -> {
                 val usewhiteforeground: Boolean = call.argument("whiteForeground")!!
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val window = activity!!.window
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightNavigationBars = !usewhiteforeground
+                    window.isNavigationBarContrastEnforced = true
+                } else {
+                    @Suppress("DEPRECATION")
                     if (usewhiteforeground) {
-                        activity!!.window.decorView.systemUiVisibility = activity!!.window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+                        window.decorView.systemUiVisibility = window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
                     } else {
-                        activity!!.window.decorView.systemUiVisibility = activity!!.window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                        window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                     }
                 }
                 result.success(null)
